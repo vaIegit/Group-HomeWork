@@ -195,4 +195,57 @@ class MainWindow(QMainWindow):
         self.reset_map()
         self.update_status(STATUS_READY)
 
-        self.show()
+        self.show()def init_map(self):
+        # Add positions to the map
+        for x in range(0, self.b_size):
+            for y in range(0, self.b_size):
+                w = Pos(x, y)
+                self.grid.addWidget(w, y, x)
+                # Connect signal to handle expansion.
+                w.clicked.connect(self.trigger_start)
+                w.expandable.connect(self.expand_reveal)
+                w.ohno.connect(self.game_over)
+
+    def reset_map(self):
+        # Clear all mine positions
+        for x in range(0, self.b_size):
+            for y in range(0, self.b_size):
+                w = self.grid.itemAtPosition(y, x).widget()
+                w.reset()
+
+        # Add mines to the positions
+        positions = []
+        while len(positions) < self.n_mines:
+            x, y = random.randint(0, self.b_size - 1), random.randint(0, self.b_size - 1)
+            if (x, y) not in positions:
+                w = self.grid.itemAtPosition(y, x).widget()
+                w.is_mine = True
+                positions.append((x, y))
+
+        def get_adjacency_n(x, y):
+            positions = self.get_surrounding(x, y)
+            n_mines = sum(1 if w.is_mine else 0 for w in positions)
+
+            return n_mines
+
+        # Add adjacencies to the positions
+        for x in range(0, self.b_size):
+            for y in range(0, self.b_size):
+                w = self.grid.itemAtPosition(y, x).widget()
+                w.adjacent_n = get_adjacency_n(x, y)
+
+        # Place starting marker
+        while True:
+            x, y = random.randint(0, self.b_size - 1), random.randint(0, self.b_size - 1)
+            w = self.grid.itemAtPosition(y, x).widget()
+            # We don't want to start on a mine.
+            if (x, y) not in positions:
+                w = self.grid.itemAtPosition(y, x).widget()
+                w.is_start = True
+
+                # Reveal all positions around this, if they are not mines either.
+                for w in self.get_surrounding(x, y):
+                    if not w.is_mine:
+                        w.click()
+                break
+
