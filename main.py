@@ -195,7 +195,8 @@ class MainWindow(QMainWindow):
         self.reset_map()
         self.update_status(STATUS_READY)
 
-        self.show()def init_map(self):
+        self.show()
+    def init_map(self):
         # Add positions to the map
         for x in range(0, self.b_size):
             for y in range(0, self.b_size):
@@ -249,3 +250,59 @@ class MainWindow(QMainWindow):
                         w.click()
                 break
 
+    def get_surrounding(self, x, y):
+        positions = []
+
+        for xi in range(max(0, x - 1), min(x + 2, self.b_size)):
+            for yi in range(max(0, y - 1), min(y + 2, self.b_size)):
+                positions.append(self.grid.itemAtPosition(yi, xi).widget())
+
+        return positions
+
+    def button_pressed(self):
+        if self.status == STATUS_PLAYING:
+            self.update_status(STATUS_FAILED)
+            self.reveal_map()
+
+        elif self.status == STATUS_FAILED:
+            self.update_status(STATUS_READY)
+            self.reset_map()
+
+    def reveal_map(self):
+        for x in range(0, self.b_size):
+            for y in range(0, self.b_size):
+                w = self.grid.itemAtPosition(y, x).widget()
+                w.reveal()
+
+    def expand_reveal(self, x, y):
+        for xi in range(max(0, x - 1), min(x + 2, self.b_size)):
+            for yi in range(max(0, y - 1), min(y + 2, self.b_size)):
+                w = self.grid.itemAtPosition(yi, xi).widget()
+                if not w.is_mine:
+                    w.click()
+
+    def trigger_start(self, *args):
+        if self.status != STATUS_PLAYING:
+            # First click.
+            self.update_status(STATUS_PLAYING)
+            # Start timer.
+            self._timer_start_nsecs = int(time.time())
+
+    def update_status(self, status):
+        self.status = status
+        self.button.setIcon(QIcon(STATUS_ICONS[self.status]))
+
+    def update_timer(self):
+        if self.status == STATUS_PLAYING:
+            n_secs = int(time.time()) - self._timer_start_nsecs
+            self.clock.setText("%03d" % n_secs)
+
+    def game_over(self):
+        self.reveal_map()
+        self.update_status(STATUS_FAILED)
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = MainWindow()
+    app.exec_()
