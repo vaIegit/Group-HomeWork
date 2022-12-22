@@ -33,6 +33,10 @@ it is on a non-mine spot. This allows us not to worry about the bad first move
 which would require us to recalculate the adjacencies.
 We can explain this away as the "initial exploration around the rocket"
 and make it sound completely sensible.
+![image](https://user-images.githubusercontent.com/117392720/209164444-073c3cf3-40a4-405b-ac6f-5427337681fd.png)
+![image](https://user-images.githubusercontent.com/117392720/209164560-70a59499-e999-499a-b4da-d4d2af72743f.png)
+
+
 
 ## Other licenses
 
